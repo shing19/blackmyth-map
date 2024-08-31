@@ -14,6 +14,8 @@ const Map: React.FC<MapProps> = ({ data }) => {
   const isDraggingRef = useRef(false)
   const lastPositionRef = useRef({ x: 0, y: 0 })
 
+  console.log(data)
+
   useEffect(() => {
     const canvas = canvasRef.current
     const container = containerRef.current
@@ -152,22 +154,24 @@ const Map: React.FC<MapProps> = ({ data }) => {
 
       landmarks.forEach((landmark: any) => {
         const scaleY = 1.34
-        const scaleX = 1.23
+        const scaleX = 1.21
         const correctionX = 1.48
         const correctionY = 0.44
         const x = (landmark.x + correctionX) * ctx.canvas.width / 2 * scaleX + correctionX;
         const y = (1 - landmark.y + correctionY) * ctx.canvas.height / 2 * scaleY + correctionY;
 
-        // 绘制标记点
-        ctx.beginPath();
-        ctx.arc(x, y, 5 / scale, 0, 2 * Math.PI);
-        ctx.fillStyle = 'red';
-        ctx.fill();
-
+      // 加载并绘制图标
+      const icon = new Image();
+      icon.src = `/markers/${category}.png`;
+      icon.onload = () => {
+        const iconSize = 20 / scale;
+        ctx.drawImage(icon, x - iconSize / 2, y - iconSize, iconSize, iconSize);
+        
         // 绘制标签
         ctx.fillStyle = 'white';
         ctx.font = `${12 / scale}px Arial`;
-        ctx.fillText(landmark.name, x + 8 / scale, y);
+          ctx.fillText(landmark.name, x + 8 / scale, y);
+        };
       });
     });
 
