@@ -6,6 +6,8 @@ import data from "../public/data.json";
 import i18n from "../public/i18n.json";
 import { useSearchParams } from "next/navigation";
 
+type SupportedLanguage = keyof typeof i18n;
+
 export default function Home() {
   const [mapData, setMapData] = useState<typeof data.geomarks | null>(null);
   const [geomarkNames, setGeomarkNames] = useState<string[]>([]);
@@ -13,17 +15,20 @@ export default function Home() {
   const searchParams = useSearchParams();
   const langParam = searchParams.get("lang");
 
-  const [currentLanguage, setCurrentLanguage] = useState(() => {
-    const supportedLanguages = Object.keys(i18n);
-    return langParam && supportedLanguages.includes(langParam)
-      ? langParam
-      : "en"; // 默认英语
-  });
+  const [currentLanguage, setCurrentLanguage] = useState<SupportedLanguage>(
+    () => {
+      const supportedLanguages = Object.keys(i18n) as SupportedLanguage[];
+      return langParam &&
+        supportedLanguages.includes(langParam as SupportedLanguage)
+        ? (langParam as SupportedLanguage)
+        : "en";
+    },
+  );
 
   useEffect(() => {
     const names = data.geomarks.map((geomark) => Object.keys(geomark)[0]);
     setGeomarkNames(names);
-    setSelectedGeomarks(names); // 默认全选
+    setSelectedGeomarks(names);
     updateMapData(names);
   }, []);
 
@@ -47,9 +52,11 @@ export default function Home() {
   const t = (key: string): string => {
     return (
       (i18n[currentLanguage] &&
-        i18n[currentLanguage][
-          key as keyof (typeof i18n)[typeof currentLanguage]
-        ]) ||
+        ((
+          i18n[currentLanguage] as {
+            [key: string]: string | Record<string, string>;
+          }
+        )[key] as string)) ||
       key
     );
   };
@@ -57,7 +64,7 @@ export default function Home() {
   const tGeomark = (key: string): string => {
     return (
       (i18n[currentLanguage]?.geomarks &&
-        i18n[currentLanguage].geomarks[key]) ||
+        (i18n[currentLanguage].geomarks as { [key: string]: string })[key]) ||
       key
     );
   };
@@ -88,16 +95,16 @@ export default function Home() {
             className="bg-black bg-opacity-0 text-white px-2 py-1"
             value={currentLanguage}
             onChange={(e) => {
-              setCurrentLanguage(e.target.value);
+              setCurrentLanguage(e.target.value as SupportedLanguage);
               // 更新URL，但不刷新页面
               const newUrl = new URL(window.location.href);
               newUrl.searchParams.set("lang", e.target.value);
               window.history.pushState({}, "", newUrl);
             }}
           >
-            {Object.entries(i18n).map(([lang, langData]) => (
+            {(Object.keys(i18n) as SupportedLanguage[]).map((lang) => (
               <option key={lang} value={lang}>
-                {langData.languageName}
+                {i18n[lang].languageName}
               </option>
             ))}
           </select>
