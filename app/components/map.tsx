@@ -1,7 +1,11 @@
 'use client'
 import React, { useState, useEffect, useRef } from 'react'
 
-const Map = () => {
+interface MapProps {
+  data: any;
+}
+
+const Map: React.FC<MapProps> = ({ data }) => {
   const [scale, setScale] = useState(1)
   const [position, setPosition] = useState({ x: 0, y: 0 })
   const canvasRef = useRef<HTMLCanvasElement>(null)
@@ -31,6 +35,7 @@ const Map = () => {
 
     return () => resizeObserver.disconnect()
   }, [])
+
 
   const resizeCanvas = () => {
     const canvas = canvasRef.current
@@ -116,6 +121,57 @@ const Map = () => {
 
   const handleMouseUp = () => {
     isDraggingRef.current = false
+  }
+
+  useEffect(() => {
+    const canvas = canvasRef.current
+    if (!canvas) return
+
+    const ctx = canvas.getContext('2d')
+    if (!ctx || !imgRef.current) return
+
+    drawImage(ctx, imgRef.current)
+    drawLandmarks(ctx)
+  }, [scale, position, data])
+
+  const drawLandmarks = (ctx: CanvasRenderingContext2D) => {
+    if (!data) return;
+
+    ctx.save()
+    
+    const centerX = ctx.canvas.width / 2
+    const centerY = ctx.canvas.height / 2
+    
+    ctx.translate(centerX + position.x, centerY + position.y)
+    ctx.scale(scale, scale)
+    ctx.translate(-centerX, -centerY)
+
+    data.forEach((geomark: any) => {
+      const category = Object.keys(geomark)[0];
+      const landmarks = geomark[category].landmarks;
+
+      landmarks.forEach((landmark: any) => {
+        const scaleY = 1.34
+        const scaleX = 1.23
+        const correctionX = 1.48
+        const correctionY = 0.44
+        const x = (landmark.x + correctionX) * ctx.canvas.width / 2 * scaleX + correctionX;
+        const y = (1 - landmark.y + correctionY) * ctx.canvas.height / 2 * scaleY + correctionY;
+
+        // 绘制标记点
+        ctx.beginPath();
+        ctx.arc(x, y, 5 / scale, 0, 2 * Math.PI);
+        ctx.fillStyle = 'red';
+        ctx.fill();
+
+        // 绘制标签
+        ctx.fillStyle = 'white';
+        ctx.font = `${12 / scale}px Arial`;
+        ctx.fillText(landmark.name, x + 8 / scale, y);
+      });
+    });
+
+    ctx.restore()
   }
 
   return (
