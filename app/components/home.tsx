@@ -109,6 +109,42 @@ const Home = () => {
             ))}
           </select>
         </div>
+        <div className="bg-black bg-opacity-30 border border-white rounded px-2">
+          <select
+            className="bg-black bg-opacity-0 text-white px-2 py-1"
+            defaultValue="Chapter 2"
+            onChange={(e) => {
+              if (e.target.value !== "Chapter 2") {
+                window.open(
+                  "https://blairwave50.gumroad.com/l/rdptj",
+                  "_blank",
+                );
+              }
+            }}
+          >
+            {[
+              "Chapter 1",
+              "Chapter 2",
+              "Chapter 3.1",
+              "Chapter 3.2",
+              "Chapter 3.3",
+              "Chapter 3.4",
+              "Chapter 3.5",
+              "Chapter 3.6",
+              "Chapter 4.1",
+              "Chapter 4.2",
+              "Chapter 4.3",
+              "Chapter 4.4",
+              "Chapter 4.5",
+              "Chapter 5",
+              "Chapter 6",
+            ].map((chapter) => (
+              <option key={chapter} value={chapter}>
+                {chapter}
+              </option>
+            ))}
+          </select>
+        </div>
       </div>
 
       <div className="absolute top-[12vh] left-[45vw] transform -translate-x-1/2 w-[45vw] max-w-[1000px]">
